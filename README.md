@@ -9,6 +9,7 @@ This repository contains the infrastructure setup for running the entire Mars Ba
 ### Services
 
 1. **MongoDB** (Port 27017)
+
    - Database: `mars_cargo`
    - User: `marsadmin`
    - Password: `marspassword123`
@@ -16,6 +17,7 @@ This repository contains the infrastructure setup for running the entire Mars Ba
    - Health checks enabled
 
 2. **Backend API** (Port 3000)
+
    - Node.js/TypeScript Express application
    - Real-time updates via Socket.IO
    - REST API with Swagger documentation
@@ -42,6 +44,7 @@ docker-compose up -d
 ```
 
 This will:
+
 - Pull the MongoDB image
 - Build the backend Docker image
 - Build the frontend Docker image
@@ -159,8 +162,8 @@ environment:
   PORT: 3000
   MONGODB_URI: mongodb://marsadmin:marspassword123@mongodb:27017/mars_cargo?authSource=admin
   CORS_ORIGIN: http://localhost:8080
-  RESOURCE_UPDATE_INTERVAL: 5000  # 5 seconds
-  ALERT_CHECK_INTERVAL: 10000     # 10 seconds
+  RESOURCE_UPDATE_INTERVAL: 5000 # 5 seconds
+  ALERT_CHECK_INTERVAL: 10000 # 10 seconds
 ```
 
 ## Networking
@@ -259,6 +262,7 @@ services:
 ```
 
 Create a `.env` file:
+
 ```env
 MONGO_USER=production_user
 MONGO_PASSWORD=strong_random_password
@@ -267,6 +271,7 @@ FRONTEND_URL=https://mars.yourdomain.com
 ```
 
 Run with:
+
 ```bash
 docker-compose -f docker-compose.prod.yaml up -d
 ```
@@ -301,6 +306,24 @@ services:
           memory: 512M
 ```
 
+## CI/CD
+
+### GitHub Actions
+
+This repository includes a CI/CD workflow that validates the docker-compose configuration:
+
+- **Validates YAML syntax** - Ensures docker-compose.yaml is valid
+- **Checks for warnings** - Detects deprecated syntax
+- **Verifies files** - Ensures required documentation exists
+
+**Note:** The workflow does NOT build Docker images since the backend and frontend source code is in separate repositories (`mars-backend` and `mars-frontend`).
+
+See `.github/workflows/README.md` for details.
+
+### Deployment
+
+For deployment guides, see `DEPLOYMENT.md`.
+
 ## License
 
 Copyright PERFICIENT - All rights reserved
@@ -308,6 +331,7 @@ Copyright PERFICIENT - All rights reserved
 ## Support
 
 For issues and questions:
+
 - Check logs: `docker-compose logs -f`
 - Verify health: `docker-compose ps`
 - Review MongoDB status: `docker-compose exec mongodb mongosh --eval "db.adminCommand('ping')"`

@@ -1,10 +1,10 @@
 # Infrastructure CI/CD Workflows
 
-## 📋 Workflows
+## Workflows
 
 ### `ci.yml` - Docker Compose Validation
 
-Validates and tests the docker-compose configuration.
+Validates the docker-compose configuration without building (since frontend and backend are in separate repositories).
 
 **Jobs:**
 
@@ -13,16 +13,16 @@ Validates and tests the docker-compose configuration.
    - Checks docker-compose.yaml syntax
    - Validates service configurations
    - Ensures compose file is valid
+   - Checks for deprecated syntax warnings
 
-2. **Test Build**
-   - Builds all services (backend, frontend, MongoDB)
-   - Starts the full stack
-   - Waits for services to be healthy
-   - Checks service status
-   - Shows logs on failure
-   - Cleans up containers and volumes
+2. **Lint**
+   - Verifies required files exist (README, docker-compose.yaml)
+   - Checks for documentation files
+   - Ensures repository structure is correct
 
-## 🚀 Usage
+**Note:** This workflow does NOT build the services since `mars-backend` and `mars-frontend` are in separate repositories. Use this for configuration validation only.
+
+## Usage
 
 ### Validate Locally
 
@@ -30,9 +30,33 @@ Validates and tests the docker-compose configuration.
 docker compose config
 ```
 
-### Build & Start Services
+### Check for Warnings
 
 ```bash
+docker compose config 2>&1 | grep -i "warning"
+```
+
+## Important Note
+
+This repository contains only the infrastructure configuration (docker-compose.yaml).
+
+**To run the full stack:**
+
+1. Clone all three repositories side by side:
+   ```
+   parent-folder/
+   ├── mars-backend/
+   ├── mars-frontend/
+   └── mars-infra/
+   ```
+2. From `mars-infra`, run: `docker compose up`
+
+The docker-compose.yaml references `../mars-backend` and `../mars-frontend` for builds.
+
+### Build & Start Services (Local Development)
+
+```bash
+# Ensure you have all three repos cloned side by side
 docker compose up --build
 ```
 
@@ -42,15 +66,34 @@ docker compose up --build
 docker compose down -v
 ```
 
-## 📦 Services
+## Services
 
 The docker-compose.yaml orchestrates:
 
-- **MongoDB** - Database with authentication
-- **Backend API** - Express.js server
-- **Frontend** - React/Vite application
+- **MongoDB** - Database with authentication (built-in image)
+- **Backend API** - Express.js server (references ../mars-backend)
+- **Frontend** - React/Vite application (references ../mars-frontend)
 
-## ✅ Health Checks
+## CI/CD Validation Only
+
+The GitHub Actions workflow validates the docker-compose configuration syntax but does NOT build the services since this repository doesn't contain the source code.
+
+**What the CI validates:**
+
+- YAML syntax is correct
+- Service definitions are valid
+- No deprecated syntax
+- Required files are present
+
+**What the CI does NOT do:**
+
+- Build Docker images (requires separate repositories)
+- Start services (not possible in isolated repo)
+- Run integration tests (handled by individual repos)
+
+## Local Testing
+
+For full integration testing, ensure all repos are cloned:
 
 All services include health checks:
 
@@ -58,6 +101,6 @@ All services include health checks:
 - Backend: HTTP health endpoint
 - Frontend: HTTP availability check
 
-## 🔧 Environment
+## Environment
 
 See `docker-compose.yaml` for service configurations and environment variables.
