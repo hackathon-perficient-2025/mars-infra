@@ -1,0 +1,53 @@
+name: Infrastructure CI/CD
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+
+jobs:
+  validate:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yaml
+        run: docker compose config
+
+      - name: Check docker-compose syntax
+        run: docker compose config --quiet
+
+  test-build:
+    name: Test Docker Compose Build
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build services
+        run: docker compose build --no-cache
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to start..."
+          sleep 30
+
+      - name: Check services status
+        run: docker compose ps
+
+      - name: View logs
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
